@@ -108,3 +108,58 @@ tasks.register('dumpTextures', JavaExec) {
     workingDir = runRoot
     systemProperties System.getProperties().subMap(['map', 'tile', 'out'])
 }
+
+// ===========================================================================
+// Distribution native autonome (jpackage) — même principe que gloom-java : moteur + jME + JRE
+// embarqués, AUCUNE donnée de jeu ; au premier lancement, le jeu cherche les disquettes Gloom
+// Deluxe ($APPDIR/adf, ~/.gloom-java/adf…) ou propose de les télécharger (rien sans un oui).
+// ===========================================================================
+def appVersion = '0.7'
+def jpackageInputDir = layout.buildDirectory.dir('jpackage-input')
+def jpackageOutDir = layout.buildDirectory.dir('jpackage')
+def isWindows = System.getProperty('os.name').toLowerCase().contains('win')
+def jpackageTool = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+        .get().metadata.installationPath.file('bin/jpackage' + (isWindows ? '.exe' : '')).asFile
+
+tasks.register('jpackageStage', Copy) {
+    group = 'distribution'
+    description = "Prépare l'entrée jpackage (jar + jME + natives LWJGL)"
+    dependsOn tasks.named('jar')
+    doFirst { delete jpackageInputDir.get().asFile }
+    into jpackageInputDir
+    from(tasks.named('jar').flatMap { it.archiveFile })
+    from(configurations.runtimeClasspath)
+}
+
+tasks.register('jpackage', Exec) {
+    group = 'distribution'
+    description = 'Crée une app native autonome (build/jpackage/GloomRebirth) : JRE embarqué'
+    dependsOn tasks.named('jpackageStage')
+    doFirst {
+        delete jpackageOutDir.get().dir('GloomRebirth').asFile
+        jpackageOutDir.get().asFile.mkdirs()
+    }
+    commandLine jpackageTool.absolutePath,
+            '--type', 'app-image',
+            '--name', 'GloomRebirth',
+            '--app-version', appVersion,
+            '--vendor', 'Guillaume Monet',
+            '--copyright', 'Moteur (c) Black Magic Software 1995 - portage Java et vue 3D Guillaume Monet',
+            '--description', 'Gloom Rebirth - vue 3D du portage Java de Gloom, par Guillaume Monet',
+            '--input', jpackageInputDir.get().asFile.absolutePath,
+            '--main-jar', tasks.named('jar').get().archiveFileName.get(),
+            '--main-class', 'gloom.rebirth.Rebirth',
+            '--dest', jpackageOutDir.get().asFile.absolutePath,
+            '--java-options', '-Dgloom.appdir=$APPDIR',
+            '--java-options', '-Xmx1g'
+}
+
+// Archive de release Windows → build/release/GloomRebirth-<version>-windows-x64.zip
+tasks.register('releaseZip', Zip) {
+    group = 'distribution'
+    description = 'Zippe l\'app native (jpackage) pour une release GitHub'
+    dependsOn tasks.named('jpackage')
+    from(jpackageOutDir.map { it.dir('GloomRebirth') }) { into 'GloomRebirth' }
+    archiveFileName = "GloomRebirth-${appVersion}-windows-x64.zip"
+    destinationDirectory = layout.buildDirectory.dir('release')
+}

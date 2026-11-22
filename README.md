@@ -10,6 +10,16 @@ pas appelé : Rebirth lit directement l'état du monde en RAM 68k et le traduit 
 
 ![Gloom Rebirth](docs/img/rebirth-3d.png)
 
+*Vue 3D avec le panneau de statut et l'arme de Gloom Deluxe en surimpression, pixels nets.*
+
+## Télécharger
+
+Les binaires sont dans les [releases](https://github.com/guillaumemonet/gloom-rebirth/releases) :
+`GloomRebirth-<version>-windows-x64.zip` (JRE embarqué : décompresser, lancer `GloomRebirth.exe`) et
+l'APK Android. **Aucune donnée du jeu n'est incluse** : au premier lancement, si les disquettes de
+Gloom Deluxe sont introuvables, le jeu propose de les télécharger depuis
+[Amiga Museum](https://amigamuseum.emu-france.info) — rien sans un oui.
+
 ---
 
 ## 1. Séparation d'avec gloom-java
@@ -69,6 +79,7 @@ Depuis `gloom-rebirth/` :
 ```bash
 gradle run                        # vue 3D (= gradle rebirth)
 gradle rebirth -Dshot             # capture d'une frame 3D → ../rebirth.png, puis quitte
+gradle releaseZip                 # app native (JRE embarqué) zippée → build/release/
 gradle dumpTextures -Dmap=map1_1  # extrait les textures du niveau → ../rebirth-docs/gloom-rebirth/hd_src/map1/
 cd android && gradle assembleDebug   # APK « Gloom Rebirth » (applicationId gloom.rebirth)
 ```

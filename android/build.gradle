@@ -22,7 +22,7 @@ android {
         minSdk 26
         targetSdk 34
         versionCode 1
-        versionName '0.6'
+        versionName '0.7'
         ndk {
             // jme3-android-native fournit 4 ABI ; on garde celles des téléphones réels
             abiFilters 'arm64-v8a', 'armeabi-v7a'
