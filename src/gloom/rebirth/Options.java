@@ -22,7 +22,7 @@ public final class Options {
     // --- confort ---
     public float fov = 100f;
     public float mouseSens = 0.18f;
-    public float playerSpeed = 1.5f;
+    public float playerSpeed = 1.0f;
     /** Grossissement des particules (sang / étincelles / gibs) : minuscules à l'échelle 3D. */
     public float particleScale = 1.5f;
     // --- contrôles (codes JME KeyInput) ---

@@ -99,9 +99,10 @@ Toutes les touches sont **remappables** dans le menu `OPTIONS`.
 | Dégâts / mort | voile rouge plein écran (flash décroissant) |
 | Écrans d'histoire, menus, game over | le framebuffer 2D de `host.Game` uploadé en overlay plein écran (même UI que le portage 2D) |
 
-La simulation tourne à **pas de temps fixe** (1/60 s, accumulateur borné à 6 pas) : le gameplay reste
-à la vitesse fidèle quel que soit le framerate d'affichage. Seule la **vitesse du joueur** est
-poussée (`PLAYER SPEED`, ×1.5 par défaut) — les monstres et les balles gardent leur vitesse d'origine.
+La simulation tourne à **pas de temps fixe** de 1/50 s — le balayage PAL de l'Amiga, logique un pas
+sur deux (accumulateur borné à 6 pas) : le gameplay reste à la vitesse de l'original quel que soit le
+framerate d'affichage (60, 144 Hz…). La **vitesse du joueur** seule peut être poussée (`PLAYER SPEED`,
+×1.0 par défaut) — les monstres et les balles gardent leur vitesse d'origine.
 
 ### Textures HD (optionnel)
 

@@ -119,7 +119,7 @@ public final class Rebirth extends SimpleApplication {
     private final Map<Integer, Texture2D> spriteCache = new HashMap<>();
     private final Map<Integer, float[]> texLight = new HashMap<>();  // texNum → {r,g,b} si texture émissive
     private final Set<Integer> seeThroughTex = new HashSet<>();      // textures à colonnes ajourées (grilles/portes)
-    private static final float TICK_DT = 1f / 60f;                 // cadence SIMU FIXE (1.0 = fidèle ; monstres/balles)
+    private static final float TICK_DT = (float) (1.0 / gloom.host.Clock.HZ);   // cadence SIMU FIXE : 50 pas/s (VBL PAL)
     private float acc;                                             // accumulateur de temps pour le pas fixe
     private int playerBaseMovspeed = 13;                          // ob_movspeed (mot fort) par défaut du joueur (player1=0xd0000)
     private Options opt;                                           // options 3D (affichage/contrôles/confort), persistées
@@ -593,8 +593,8 @@ public final class Rebirth extends SimpleApplication {
             if (inMenu) { if (audio != null) audio.updateMusic(); return; }
         }
 
-        // pas de temps FIXE : game.update() à cadence constante (logique = 30*SPEED Hz ; tick() fait la
-        // logique 1 appel/2). On s'arrête net si on quitte le jeu ou change de niveau en cours de boucle.
+        // pas de temps FIXE : game.update() à 50 pas/s comme l'Amiga PAL (logique = 25 Hz ; tick() fait
+        // la logique 1 appel/2). On s'arrête net si on quitte le jeu ou change de niveau en cours de boucle.
         acc += Math.min(tpf, 0.25f);
         int steps = 0;
         LevelScene before = game.scene;
