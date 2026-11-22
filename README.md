@@ -21,7 +21,7 @@ de la simulation profite aux deux.
 ```
 Gloom/
 ├── GloomAmiga/          ← assets + sources asm d'origine (lus à l'exécution)
-├── gloom-java/          ← portage fidèle 2D : moteur partagé (java/src)
+├── gloom-java/java/     ← portage fidèle 2D (dépôt gloom-java) : moteur partagé (src/)
 └── gloom-rebirth/       ← CE projet
     ├── hd/              ← textures HD OPTIONNELLES, par épisode (hd/map1/wall_<slot>.png, floor.png, roof.png)
     ├── hd_src/          ← textures de base extraites (`gradle dumpTextures`), entrée de l'upscale
@@ -43,14 +43,14 @@ Ce qui est pris dans `gloom-java` : tout `gloom.*`, `gloom.data.*` et la pile h�
 
 ### Mise en place
 
-Les trois dépôts doivent être **côte à côte** (le build lit `../../gloom-java/java/src`, et le jeu
-lit `../GloomAmiga`) :
+Les trois dépôts doivent être disposés ainsi (le build lit `../../gloom-java/java/src`, le jeu lit
+`../GloomAmiga`) — `gloom-java` est cloné **dans `gloom-java/java`**, comme le prévoit son README :
 
 ```bash
 mkdir Gloom && cd Gloom
-git clone https://github.com/earok/GloomAmiga          # assets (non redistribuables, jamais copiés ici)
-git clone https://github.com/guillaumemonet/gloom-java      # moteur fidèle partagé
-git clone https://github.com/guillaumemonet/gloom-rebirth   # ce dépôt
+git clone https://github.com/earok/GloomAmiga                    # assets (non redistribuables, jamais copiés ici)
+git clone https://github.com/guillaumemonet/gloom-java gloom-java/java   # moteur fidèle partagé (dans gloom-java/java)
+git clone https://github.com/guillaumemonet/gloom-rebirth             # ce dépôt
 ```
 
 Les textures HD (`hd/`, `hd_src/`) ne sont **pas versionnées** : elles dérivent des textures de
