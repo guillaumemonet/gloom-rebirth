@@ -44,11 +44,14 @@ android {
                     'gloom/host/Display.java',          // fenêtre GLFW
                     'gloom/host/Audio.java',            // OpenAL → AndroidAudio
                     'gloom/host/DisplayTest.java',
+                    'gloom/host/DesktopAsk.java',       // Swing
                     'gloom/rebirth/DesktopGlue.java',   // GLFW + AWT : seul fichier 3D non portable
                     'gloom/android/GloomActivity.java', // l'APK 2D : on ne garde que AndroidAudio/AssetSetup
                     'gloom/android/GameView.java',
                     'gloom/android/TouchPad.java',
             ]
+            resources.srcDirs = ["$engine/src"]              // incbin de compilation (tables, sprites)
+            resources.includes = ['gloom/data/incbin/*']
             manifest.srcFile 'src/main/AndroidManifest.xml'
             res.srcDirs = ['src/main/res']
         }

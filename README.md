@@ -20,7 +20,7 @@ de la simulation profite aux deux.
 
 ```
 Gloom/
-├── GloomAmiga/          ← assets + sources asm d'origine (lus à l'exécution)
+├── adf/                 ← les deux disquettes Gloom Deluxe (.adf), lues directement
 ├── gloom-java/          ← portage fidèle 2D (dépôt gloom-java) : moteur partagé (src/)
 ├── rebirth-docs/        ← HORS git : docs de travail, captures, textures HD
 │   └── gloom-rebirth/hd/<épisode>/wall_<slot>.png, floor.png, roof.png  (+ hd_src/ = textures de base)
@@ -43,15 +43,19 @@ Ce qui est pris dans `gloom-java` : tout `gloom.*`, `gloom.data.*` et la pile h�
 
 ### Mise en place
 
-Les trois dépôts doivent être **côte à côte** (le build lit `../gloom-java/src`, le jeu lit
-`../GloomAmiga`) :
+Les deux dépôts doivent être **côte à côte** (le build lit `../gloom-java/src`) :
 
 ```bash
 mkdir Gloom && cd Gloom
-git clone https://github.com/earok/GloomAmiga                    # assets (non redistribuables, jamais copiés ici)
-git clone https://github.com/guillaumemonet/gloom-java               # moteur fidèle partagé
-git clone https://github.com/guillaumemonet/gloom-rebirth             # ce dépôt
+git clone https://github.com/guillaumemonet/gloom-java      # moteur fidèle partagé
+git clone https://github.com/guillaumemonet/gloom-rebirth   # ce dépôt
 ```
+
+Les données du jeu sont lues **dans les deux disquettes de Gloom Deluxe** (`.adf`), comme pour
+gloom-java : `-Dgloom.adf=<dossier>`, `../adf` (`Gloom/adf`), puis `~/.gloom-java/adf`. Si elles
+manquent, le jeu **propose** de les télécharger depuis
+[Amiga Museum](https://amigamuseum.emu-france.info) — rien sans un oui. L'APK fait de même au
+premier lancement.
 
 Les textures HD ne sont **pas versionnées** : elles dérivent des textures de Gloom, donc non
 redistribuables. Rebirth les cherche dans `gloom-rebirth/hd/` puis dans
@@ -70,7 +74,7 @@ cd android && gradle assembleDebug   # APK « Gloom Rebirth » (applicationId gl
 ```
 
 JDK 21, Gradle 9.x, Windows x64 (natives LWJGL). Le répertoire d'exécution est `gloom-rebirth/` :
-les assets sont lus dans `../GloomAmiga`, les textures HD dans `./hd/` ou `../rebirth-docs/gloom-rebirth/hd/`. Les options sont persistées
+les données viennent des disquettes (voir ci-dessus), les textures HD dans `./hd/` ou `../rebirth-docs/gloom-rebirth/hd/`. Les options sont persistées
 dans `~/.gloom-java/rebirth.properties` (chemin inchangé, pour garder les réglages existants).
 
 **Carte graphique** : au démarrage, le nom du rendu (`GL_RENDERER`) est affiché ; si c'est une puce
@@ -145,5 +149,6 @@ particules** (`PARTICLES`, grossit sang/étincelles/gibs — voir ci-dessous) et
 ## 4. Licence & crédits
 
 *Gloom* est © Black Magic Software. Les sources `.s`/`.bb2` d'origine sont dans le domaine public ;
-les assets ne le sont pas et ne sont jamais redistribués ici (récupérés depuis
-[earok/GloomAmiga](https://github.com/earok/GloomAmiga)). Portage et vue 3D : Guillaume Monet.
+les données du jeu ne le sont pas et ne sont jamais redistribuées ici (lues dans les disquettes de
+Gloom Deluxe, proposées au téléchargement depuis [Amiga Museum](https://amigamuseum.emu-france.info)).
+Portage et vue 3D : Guillaume Monet.

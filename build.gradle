@@ -51,8 +51,11 @@ sourceSets {
             exclude 'gloom/host/Main.java'
             exclude 'gloom/host/DisplayTest.java'
         }
+        // incbin de compilation de gloom.s (tables, sprites intégrés), embarqués par gloom-java
         resources {
-            srcDirs = []
+            srcDirs = [engineSrc]
+            include 'gloom/data/incbin/*'
+            exclude '**/README.md'
         }
     }
 }
@@ -79,6 +82,11 @@ def runRoot = projectDir
 tasks.named('run') {
     workingDir = runRoot
     systemProperties System.getProperties().subMap(['shot', 'map', 'tile', 'speed', 'mousesens', 'fov'])
+}
+
+// Source des données : disquettes Gloom Deluxe (cf. gloom.boot.Disks) ou dossier (-Dgloom.assets=).
+tasks.withType(JavaExec).configureEach {
+    systemProperties System.getProperties().subMap(['gloom.adf', 'gloom.assets', 'gloom.noDownload'])
 }
 
 // Alias historique : `gradle rebirth` (= run).

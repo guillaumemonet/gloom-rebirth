@@ -8,7 +8,8 @@ import com.jme3.app.AndroidHarness;
 
 import java.io.File;
 
-import gloom.Assets;
+import gloom.boot.Boot;
+import gloom.boot.DiskFetch;
 import gloom.rebirth.Rebirth;
 
 /**
@@ -18,7 +19,7 @@ import gloom.rebirth.Rebirth;
  *
  * Trois réglages avant le démarrage :
  * <ul>
- *   <li>{@code Assets.root} → le dossier privé peuplé par {@link SetupActivity} ;</li>
+ *   <li>les disquettes Gloom Deluxe → le dossier privé {@code adf/} peuplé par {@link SetupActivity} ;</li>
  *   <li>{@code user.home} → le même dossier, pour qu'{@code Options} y écrive ses préférences au
  *       lieu de tenter la racine du système (où l'écriture échoue) ;</li>
  *   <li>{@code Rebirth.postFx} → coupé par défaut sur mobile : ombres, brouillard et bloom sont les
@@ -62,9 +63,10 @@ public final class RebirthActivity extends AndroidHarness {
 
     @Override
     public void onCreate(Bundle state) {
-        File root = new File(getFilesDir(), "GloomAmiga");
-        Assets.root = root.toPath();
-        System.setProperty("user.home", root.getParentFile().getAbsolutePath());
+        // disquettes déjà installées par SetupActivity : on les monte sans rien demander
+        System.setProperty("gloom.adf", new File(getFilesDir(), "adf").getAbsolutePath());
+        System.setProperty("user.home", getFilesDir().getAbsolutePath());
+        Boot.ensure(DiskFetch.SILENT);
         Rebirth.fxMask = getIntent().getIntExtra("fx", DEFAULT_FX);
         Rebirth.logFps = getIntent().getBooleanExtra("fps", false);
         Rebirth.bench = getIntent().getBooleanExtra("bench", false);

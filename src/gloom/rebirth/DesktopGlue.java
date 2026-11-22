@@ -56,6 +56,11 @@ public final class DesktopGlue implements HostGlue {
     }
 
     @Override
+    public gloom.boot.DiskFetch.Ask diskAsk() {
+        return gloom.host.DesktopAsk.INSTANCE;
+    }
+
+    @Override
     public void writePng(ByteBuffer rgba, int w, int h, String path) {
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
         Screenshots.convertScreenShot(rgba, img);

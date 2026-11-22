@@ -157,6 +157,8 @@ public final class Rebirth extends SimpleApplication {
     private gloom.AudioBackend audio;
 
     public static void main(String[] args) {
+        // Données du jeu : les disquettes Gloom Deluxe (trouvées, ou téléchargées avec accord).
+        if (!gloom.boot.Boot.ensure(HostGlue.detect().diskAsk())) return;
         Options o = Options.load();        // affichage/contrôles/confort persistés (~/.gloom-java/rebirth.properties)
         Rebirth app = new Rebirth();
         app.opt = o;

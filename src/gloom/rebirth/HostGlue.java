@@ -38,6 +38,11 @@ public interface HostGlue {
         return null;
     }
 
+    /** Comment demander les disquettes à l'utilisateur (boîte de dialogue desktop ; muet ailleurs). */
+    default gloom.boot.DiskFetch.Ask diskAsk() {
+        return gloom.boot.DiskFetch.SILENT;
+    }
+
     /** Écrit une capture PNG (diagnostic {@code -Dshot} du desktop) ; ailleurs, ne fait rien. */
     default void writePng(ByteBuffer rgba, int w, int h, String path) {
     }
