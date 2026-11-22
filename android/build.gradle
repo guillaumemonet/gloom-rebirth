@@ -8,10 +8,10 @@ plugins {
  * Rien n'est dupliqué : on compile
  *   - src/main/java                              → RebirthActivity, Touch3d, SetupActivity, AndroidGlue
  *   - ../src                                     → la vue 3D (gloom.rebirth.*)
- *   - ../../../gloom-java/src                    → la simulation du portage fidèle (partagée)
- *   - ../../../gloom-java/android/src/...        → AndroidAudio + AssetSetup (partagés avec l'APK 2D)
+ *   - ../../gloom-java/src                       → la simulation du portage fidèle (partagée)
+ *   - ../../gloom-java/android/src/...           → AndroidAudio + AssetSetup (partagés avec l'APK 2D)
  */
-def engine = '../../../gloom-java'
+def engine = '../../gloom-java'
 
 android {
     namespace 'gloom.android3d'

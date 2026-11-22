@@ -1,9 +1,9 @@
 # build
-java/build/
-java/.gradle/
-java/android/build/
-java/android/.gradle/
-java/android/local.properties
+build/
+.gradle/
+android/build/
+android/.gradle/
+android/local.properties
 *.class
 .idea/
 nbproject/private/

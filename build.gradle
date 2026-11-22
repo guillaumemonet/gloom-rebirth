@@ -7,7 +7,7 @@ plugins {
  *
  * Ce projet ne contient QUE le code propre à la 3D (src/gloom/rebirth). La simulation (gameplay,
  * IA, maps, audio, script…) est celle du portage fidèle : ses sources sont compilées telles quelles
- * depuis le projet voisin ../../gloom-java/src — partagées, pas copiées.
+ * depuis le projet voisin ../gloom-java/src — partagées, pas copiées.
  */
 
 repositories {
@@ -19,7 +19,7 @@ ext {
     lwjglNatives = 'natives-windows'
     jmeVersion = '3.6.1-stable'
     // sources du moteur partagé (portage fidèle)
-    engineSrc = file('../../gloom-java/src')
+    engineSrc = file('../gloom-java/src')
 }
 
 dependencies {
@@ -72,9 +72,9 @@ application {
     applicationName = 'GloomRebirth'
 }
 
-// Racine d'exécution = gloom-rebirth/ : les assets sont lus dans ../GloomAmiga (défaut de
-// gloom.Assets), les textures HD dans ./hd/<épisode>/.
-def runRoot = projectDir.parentFile
+// Racine d'exécution = gloom-rebirth/ (ce projet) : les assets sont lus dans ../GloomAmiga (défaut de
+// gloom.Assets), les textures HD dans ./hd/<épisode>/ ou ../rebirth-docs/gloom-rebirth/hd/.
+def runRoot = projectDir
 
 tasks.named('run') {
     workingDir = runRoot

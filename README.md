@@ -8,7 +8,7 @@ pas appelé : Rebirth lit directement l'état du monde en RAM 68k et le traduit 
 
 > Porté par **Guillaume Monet**, avec l'assistance de Claude.
 
-![Gloom Rebirth](java/docs/img/rebirth-3d.png)
+![Gloom Rebirth](docs/img/rebirth-3d.png)
 
 ---
 
@@ -25,12 +25,12 @@ Gloom/
 ├── rebirth-docs/        ← HORS git : docs de travail, captures, textures HD
 │   └── gloom-rebirth/hd/<épisode>/wall_<slot>.png, floor.png, roof.png  (+ hd_src/ = textures de base)
 └── gloom-rebirth/       ← CE projet
-    └── java/
-        ├── build.gradle ← srcDirs = src + ../../gloom-java/src (sans tools/, host/Main, DisplayTest)
-        ├── src/gloom/rebirth/        ← Rebirth, Options, HostGlue, DesktopGlue
-        ├── src/gloom/rebirth/tools/  ← TextureDump
-        ├── scripts/upscale-textures.py
-        └── android/     ← APK 3D séparé (RebirthActivity, Touch3d, SetupActivity, AndroidGlue)
+    ├── build.gradle     ← srcDirs = src + ../gloom-java/src (sans tools/, host/Main, DisplayTest)
+    ├── src/gloom/rebirth/        ← Rebirth, Options, HostGlue, DesktopGlue
+    ├── src/gloom/rebirth/tools/  ← TextureDump
+    ├── scripts/upscale-textures.py
+    ├── docs/img/        ← capture du README
+    └── android/         ← APK 3D séparé (RebirthActivity, Touch3d, SetupActivity, AndroidGlue)
 ```
 
 Ce qui est pris dans `gloom-java` : tout `gloom.*`, `gloom.data.*` et la pile hôte réutilisée
@@ -43,7 +43,7 @@ Ce qui est pris dans `gloom-java` : tout `gloom.*`, `gloom.data.*` et la pile h�
 
 ### Mise en place
 
-Les trois dépôts doivent être **côte à côte** (le build lit `../../gloom-java/src`, le jeu lit
+Les trois dépôts doivent être **côte à côte** (le build lit `../gloom-java/src`, le jeu lit
 `../GloomAmiga`) :
 
 ```bash
@@ -60,12 +60,12 @@ local (cf. « Textures HD » ci-dessous) ; sans elles, Rebirth utilise les textu
 
 ### Commandes
 
-Depuis `java/` :
+Depuis `gloom-rebirth/` :
 
 ```bash
 gradle run                        # vue 3D (= gradle rebirth)
 gradle rebirth -Dshot             # capture d'une frame 3D → ../rebirth.png, puis quitte
-gradle dumpTextures -Dmap=map1_1  # extrait les textures du niveau → ../../rebirth-docs/gloom-rebirth/hd_src/map1/
+gradle dumpTextures -Dmap=map1_1  # extrait les textures du niveau → ../rebirth-docs/gloom-rebirth/hd_src/map1/
 cd android && gradle assembleDebug   # APK « Gloom Rebirth » (applicationId gloom.rebirth)
 ```
 
@@ -108,15 +108,14 @@ Rebirth cherche des PNG dans `hd/<épisode>/` (ex. `hd/map1/wall_7.png`, `floor.
 retombe sur les textures 64×64 d'origine si le fichier manque. Chaîne de production :
 
 ```bash
-gradle dumpTextures -Dmap=map1_1          # → ../../rebirth-docs/gloom-rebirth/hd_src/map1/*.png
-python scripts/upscale-textures.py --src ../../rebirth-docs/gloom-rebirth/hd_src --out ../../rebirth-docs/gloom-rebirth/hd
+gradle dumpTextures -Dmap=map1_1          # → ../rebirth-docs/gloom-rebirth/hd_src/map1/*.png
+python scripts/upscale-textures.py --src ../rebirth-docs/gloom-rebirth/hd_src --out ../rebirth-docs/gloom-rebirth/hd
 ```
 
 `upscale-textures.py` parcourt `hd_src/` récursivement (l'arborescence par épisode est conservée) et
 prend Real-ESRGAN ncnn s'il est sur le `PATH` (`realesrgan-ncnn-vulkan`, modèle `x4plus-anime`, le
 meilleur sur du pixel-art), sinon repli Pillow/LANCZOS sans IA. Ses défauts `--src hd_src --out hd`
-supposent qu'on le lance depuis la racine des assets, d'où les chemins explicites ci-dessus quand on
-travaille depuis `java/`.
+supposent qu'on le lance depuis la racine des assets, d'où les chemins explicites ci-dessus.
 
 ### Menu OPTIONS
 
