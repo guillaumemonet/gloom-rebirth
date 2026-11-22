@@ -77,10 +77,7 @@ JDK 21, Gradle 9.x, Windows x64 (natives LWJGL). Le répertoire d'exécution est
 les données viennent des disquettes (voir ci-dessus), les textures HD dans `./hd/` ou `../rebirth-docs/gloom-rebirth/hd/`. Les options sont persistées
 dans `~/.gloom-java/rebirth.properties` (chemin inchangé, pour garder les réglages existants).
 
-**Carte graphique** : au démarrage, le nom du rendu (`GL_RENDERER`) est affiché ; si c'est une puce
-intégrée (`Intel HD/UHD/Iris`, `AMD Radeon(TM) Graphics`, `Microsoft Basic Render`), un
-**avertissement** s'affiche en console ET à l'écran (~15 s) avec le correctif : Paramètres Windows →
-Système → Affichage → Graphiques → ajouter `java.exe` et `javaw.exe` → « Hautes performances ».
+**Carte graphique** : au démarrage, le nom du rendu (`GL_RENDERER`) est affiché dans la console.
 
 **Contrôles** : `W`/`S` avancer/reculer, `A`/`D` pas de côté, `←`/`→` tourner, **souris** mouselook
 (curseur verrouillé), `Ctrl` tirer, `Échap` = menu contextuel (options → menu → quitter).

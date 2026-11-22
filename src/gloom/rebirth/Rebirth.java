@@ -154,7 +154,6 @@ public final class Rebirth extends SimpleApplication {
     private Geometry hpBar;
     private BitmapText hudText;
     private Geometry redOverlay;                                    // voile rouge plein écran (coups + mort)
-    private BitmapText gpuText;                                     // avertissement carte intégrée (~15 s)
     private BitmapText messText;                                    // message du jeu (Mess/printmess)
     private Geometry splatQuad;                                     // éclaboussure de sang sur la vue
     private final Map<Integer, Material> splatMats = new HashMap<>();   // un matériau par glyphe (51-54)
@@ -408,17 +407,9 @@ public final class Rebirth extends SimpleApplication {
         messText.setCullHint(Spatial.CullHint.Always);
         guiNode.attachChild(messText);
 
-        // Quelle carte graphique ? Avertissement À L'ÉCRAN (pas seulement en console) si iGPU.
+        // quelle carte graphique ? (une ligne dans la console)
         String[] rv = glue.glRendererVendor();
-        String gpuWarn = rv == null ? null : gloom.host.GpuCheck.report(rv[0], rv[1]);
-        if (gpuWarn != null) {
-            gpuText = new BitmapText(font);
-            gpuText.setSize(font.getCharSet().getRenderedSize());
-            gpuText.setColor(new ColorRGBA(1f, 0.35f, 0.2f, 1f));
-            gpuText.setText("AVERTISSEMENT - " + gpuWarn + "\n" + gloom.host.GpuCheck.FIX);
-            gpuText.setLocalTranslation(10, cam.getHeight() - 70, 1);   // sous la ligne HUD
-            guiNode.attachChild(gpuText);
-        }
+        if (rv != null) gloom.host.GpuCheck.report(rv[0], rv[1]);
 
         splatQuad = new Geometry("splat", new Quad(1, 1));         // éclaboussure (texture posée au tir)
         splatQuad.setCullHint(Spatial.CullHint.Always);
@@ -534,7 +525,6 @@ public final class Rebirth extends SimpleApplication {
     public void simpleUpdate(float tpf) {
         frame++;
         countFps();
-        if (gpuText != null && frame > 900) { gpuText.removeFromParent(); gpuText = null; }
         grabCursor();                                   // maintient le verrou souris (JME peut le relâcher)
         if (glue.framebufferSize(fbW, fbH)) {           // détecte le vrai framebuffer (plein écran/DPI)
             if (fbW[0] > 0 && fbH[0] > 0 && (fbW[0] != lastW || fbH[0] != lastH)) {
