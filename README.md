@@ -142,6 +142,7 @@ particules** (`PARTICLES`, grossit sang/étincelles/gibs — voir ci-dessous) et
 | R2 | Rebirth : billboards (monstres/items/gibs/étincelles) + décals de gore + sang | ✅ `gloom.rebirth.Rebirth` — `gradle rebirth -Dshot` → rebirth.png |
 | R3 | Rebirth : éclairage dynamique + post-effets + mouselook + HUD | ✅ `gloom.rebirth.Rebirth` |
 | R4 | Rebirth : textures HD par épisode (`hd/<épisode>/`) + extraction/upscale | ✅ `gradle dumpTextures` + `scripts/upscale-textures.py` |
+| R6 | Rebirth : panneau HUD + arme à l'écran de Gloom Deluxe (surimpression, pixels nets) | ✅ `gloom.host.Panel`/`Gun` (gloom-java) — `Rebirth.updateDeluxeOverlay` |
 | R5 | Rebirth : menu OPTIONS persisté (affichage, contrôles remappables, confort, particules) | ✅ `gloom.rebirth.Options` — `~/.gloom-java/rebirth.properties` |
 
 ---

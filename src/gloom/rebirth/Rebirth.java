@@ -91,6 +91,13 @@ public final class Rebirth extends SimpleApplication {
     private Geometry storyQuad;                                      // overlay plein écran : framebuffer 2D
     private Image storyImg;                                          // image dynamique de l'overlay
     private ByteBuffer storyBuf;                                     // pixels RGBA de l'overlay
+    // surimpression Gloom Deluxe (panneau HUD + arme) : framebuffer 2D de OV_H lignes, largeur au
+    // format de l'écran, fond transparent, au-dessus de la vue 3D pleine hauteur
+    private static final int OV_H = 240, OV_MAXW = 960;
+    private Geometry deluxeQuad;
+    private Image deluxeImg;
+    private ByteBuffer deluxeBuf;
+    private int deluxeFb, deluxeW;
     private boolean prevFireOver;                                    // front montant du feu (écran de fin)
     private gloom.host.Menu menu;                                    // menu titre (NEW GAME / CONTINUE / ABOUT / EXIT)
     private boolean inMenu = true;                                   // true = menu/about ; false = en jeu
@@ -229,6 +236,7 @@ public final class Rebirth extends SimpleApplication {
         setupPostFx(sun);
         setupHud();
         setupStoryOverlay();                           // overlay 2D pour écrans d'histoire / game over
+        setupDeluxeOverlay();                          // panneau HUD + arme de Gloom Deluxe
         bindKeys();
         if (!HEADLESS) initAudio();                    // SFX (Paula→OpenAL) + musique MED
 
@@ -440,7 +448,7 @@ public final class Rebirth extends SimpleApplication {
     private void updateMessAndSplat() {
         float w = cam.getWidth(), h = cam.getHeight();
         String mess = gloom.Mess.current(scene.player);
-        if (mess.isEmpty()) {
+        if (mess.isEmpty() || deluxeHud()) {           // Deluxe : le message défile dans le panneau
             messText.setCullHint(Spatial.CullHint.Always);
         } else {
             messText.setText(mess);
@@ -636,7 +644,8 @@ public final class Rebirth extends SimpleApplication {
             long gh = goreHash();                       // idem : décals de gore reconstruits sur changement
             if (gh != lastGoreHash) { lastGoreHash = gh; renderGore(); }
             renderBlood();                              // gouttes de sang (le drawblood du 2D, en 3D)
-            updateHud();
+            updateDeluxeOverlay();                      // arme + panneau de Gloom Deluxe (si présents)
+            if (!deluxeHud()) updateHud();              // sinon : HUD texte
             updateMessAndSplat();                       // message du jeu + éclaboussure de sang
             updateDamageFx();                           // flash rouge (coups) + rouge mort
         } else {
@@ -768,8 +777,10 @@ public final class Rebirth extends SimpleApplication {
         if (bloodGeom != null) bloodGeom.setCullHint(world);
         if (floorGeom != null) floorGeom.setCullHint(world);
         if (ceilGeom != null) ceilGeom.setCullHint(world);
-        hpBar.setCullHint(world);
-        hudText.setCullHint(playing ? Spatial.CullHint.Inherit : Spatial.CullHint.Always);
+        boolean textHud = playing && !deluxeHud();
+        hpBar.setCullHint(textHud ? Spatial.CullHint.Inherit : Spatial.CullHint.Always);
+        hudText.setCullHint(textHud ? Spatial.CullHint.Inherit : Spatial.CullHint.Always);
+        if (deluxeQuad != null) deluxeQuad.setCullHint(world);
         if (!playing) { messText.setCullHint(Spatial.CullHint.Always); splatQuad.setCullHint(Spatial.CullHint.Always); }
         if (!playing) redOverlay.setCullHint(Spatial.CullHint.Always);
         storyQuad.setCullHint(playing ? Spatial.CullHint.Always : Spatial.CullHint.Inherit);
@@ -787,6 +798,65 @@ public final class Rebirth extends SimpleApplication {
                         .put(dst + 2, (byte) ((c & 15) * 17)).put(dst + 3, (byte) 0xff);
             }
         storyImg.setUpdateNeeded();
+    }
+
+    /** true si la surimpression Deluxe remplace le HUD texte (panneau trouvé sur les disquettes). */
+    private boolean deluxeHud() {
+        return gloom.host.Panel.available();
+    }
+
+    /** Crée le quad de surimpression Deluxe (texture recréée à la largeur voulue par {@link #updateDeluxeOverlay}). */
+    private void setupDeluxeOverlay() {
+        if (!gloom.host.Panel.available() && !gloom.host.Gun.available()) return;
+        deluxeFb = Mem.alloc(OV_MAXW * OV_H * 2);
+        deluxeQuad = new Geometry("deluxe", new Quad(cam.getWidth(), cam.getHeight()));
+        deluxeQuad.setLocalTranslation(0, 0, -1);                  // sous le voile rouge et le texte
+        deluxeQuad.setCullHint(Spatial.CullHint.Always);
+        guiNode.attachChild(deluxeQuad);
+    }
+
+    /**
+     * Surimpression Deluxe, une fois par image en jeu : l'arme (projetée avec la focale Deluxe de 160,
+     * celle d'un écran 320×240) et le panneau 320×16 centré en bas, sur fond transparent ; puis envoi
+     * en texture (pixels nets) étirée sur tout l'écran. Largeur = 240 × format de l'écran, pour que
+     * rien ne soit déformé.
+     */
+    private void updateDeluxeOverlay() {
+        if (deluxeQuad == null) return;
+        int w = Math.max(1, cam.getWidth()), h = Math.max(1, cam.getHeight());
+        int ow = Math.max(320, Math.min(OV_MAXW, Math.round(OV_H * (float) w / h)));
+        if (ow != deluxeW) {                                       // format d'écran changé : nouvelle texture
+            deluxeW = ow;
+            deluxeBuf = BufferUtils.createByteBuffer(ow * OV_H * 4);
+            deluxeImg = new Image(Image.Format.RGBA8, ow, OV_H, deluxeBuf, ColorSpace.sRGB);
+            Texture2D tex = new Texture2D(deluxeImg);
+            tex.setMagFilter(Texture.MagFilter.Nearest);
+            tex.setMinFilter(Texture.MinFilter.NearestNoMipMaps);
+            Material m = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            m.setTexture("ColorMap", tex);
+            m.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+            deluxeQuad.setMaterial(m);
+        }
+        deluxeQuad.setMesh(new Quad(w, h));
+        int n = ow * OV_H;
+        for (int i = 0; i < n; i++) Mem.ww(deluxeFb + i * 2, gloom.host.Anim.TRANSPARENT);
+        int p = scene.player;
+        gloom.host.Gun.draw(deluxeFb, ow, ow, OV_H, 160.0, p);
+        gloom.host.Panel.draw(deluxeFb, ow, (ow - 320) / 2, OV_H, p);
+        for (int y = 0; y < OV_H; y++)
+            for (int x = 0; x < ow; x++) {
+                int c = Mem.uw(deluxeFb + (y * ow + x) * 2);
+                int dst = ((OV_H - 1 - y) * ow + x) * 4;               // flip V (guiNode : origine en bas)
+                if (c == gloom.host.Anim.TRANSPARENT) { deluxeBuf.putInt(dst, 0); continue; }
+                if (c == gloom.host.Anim.SHADOW) {
+                    deluxeBuf.put(dst, (byte) 0).put(dst + 1, (byte) 0).put(dst + 2, (byte) 0).put(dst + 3, (byte) 0x80);
+                    continue;
+                }
+                deluxeBuf.put(dst, (byte) (((c >> 8) & 15) * 17))
+                         .put(dst + 1, (byte) (((c >> 4) & 15) * 17))
+                         .put(dst + 2, (byte) ((c & 15) * 17)).put(dst + 3, (byte) 0xff);
+            }
+        deluxeImg.setUpdateNeeded();
     }
 
     /** Flash de bouche : relance l'intensité au front montant du tir, puis décroissance rapide. */
