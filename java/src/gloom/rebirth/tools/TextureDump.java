@@ -29,7 +29,7 @@ public final class TextureDump {
         String tile = System.getProperty("tile", "1");
         // sortie par ÉPISODE par défaut (ex. map1_3 → hd_src/map1) : les textures sont partagées par épisode.
         String episode = map.indexOf('_') > 0 ? map.substring(0, map.indexOf('_')) : map;
-        String out = System.getProperty("out", "hd_src/" + episode);
+        String out = System.getProperty("out", "../rebirth-docs/gloom-rebirth/hd_src/" + episode);   // hors dépôt (non redistribuable)
 
         LevelScene scene = new LevelScene();
         scene.init(320, 240, map, tile);                 // charge map + textures + palette

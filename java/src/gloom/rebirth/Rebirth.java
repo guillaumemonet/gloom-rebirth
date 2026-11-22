@@ -96,6 +96,7 @@ public final class Rebirth extends SimpleApplication {
     private boolean inMenu = true;                                   // true = menu/about ; false = en jeu
     private boolean aboutMode;                                       // écran « about » affiché
     private boolean prevMenuFire;                                    // front montant du feu (menu/about/fin)
+    private File hdAltRoot;                                          // 2e racine HD (hors dépôt), cf. simpleInitApp
     private String hdEpisode = "";                                   // épisode courant (dossier HD : hd/<épisode>/)
     private static final int FB_W = 320, FB_H = 240;                // taille du framebuffer 2D de Game
     private final Node enemies = new Node("enemies");
@@ -181,6 +182,13 @@ public final class Rebirth extends SimpleApplication {
         grabCursor();                                  // VERROUILLE la souris dans la fenêtre (mouselook FPS)
         // textures HD optionnelles : PNG dans <cwd>/hd/ (cwd = dépôt assets). Repli sur le procédural.
         assetManager.registerLocator(".", FileLocator.class);
+        // hd/ n'est pas versionné (dérivé d'assets non redistribuables) : il peut aussi vivre hors du
+        // dépôt, dans ../rebirth-docs/gloom-rebirth/hd/ (ou là où pointe -Dgloom.hdroot).
+        String hdRoot = System.getProperty("gloom.hdroot", "../rebirth-docs/gloom-rebirth");
+        if (new File(hdRoot, "hd").isDirectory()) {
+            hdAltRoot = new File(hdRoot);
+            assetManager.registerLocator(hdRoot, FileLocator.class);
+        }
 
         rootNode.attachChild(walls);                   // géométrie du niveau (reconstruite par frame)
         rootNode.attachChild(enemies);
@@ -1488,7 +1496,8 @@ public final class Rebirth extends SimpleApplication {
 
     /** Charge une texture HD optionnelle depuis &lt;cwd&gt;/hd/ ; null si absente (→ repli procédural). */
     private Texture2D loadHd(String path) {
-        if (!new java.io.File(path).isFile()) return null;     // pas d'asset → repli (sans spam de log)
+        if (!new java.io.File(path).isFile()                    // pas d'asset → repli (sans spam de log)
+                && (hdAltRoot == null || !new java.io.File(hdAltRoot, path).isFile())) return null;
         try {
             Texture t = assetManager.loadTexture(path);
             t.setWrap(Texture.WrapMode.Repeat);

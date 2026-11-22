@@ -22,9 +22,9 @@ de la simulation profite aux deux.
 Gloom/
 ├── GloomAmiga/          ← assets + sources asm d'origine (lus à l'exécution)
 ├── gloom-java/          ← portage fidèle 2D (dépôt gloom-java) : moteur partagé (src/)
+├── rebirth-docs/        ← HORS git : docs de travail, captures, textures HD
+│   └── gloom-rebirth/hd/<épisode>/wall_<slot>.png, floor.png, roof.png  (+ hd_src/ = textures de base)
 └── gloom-rebirth/       ← CE projet
-    ├── hd/              ← textures HD OPTIONNELLES, par épisode (hd/map1/wall_<slot>.png, floor.png, roof.png)
-    ├── hd_src/          ← textures de base extraites (`gradle dumpTextures`), entrée de l'upscale
     └── java/
         ├── build.gradle ← srcDirs = src + ../../gloom-java/src (sans tools/, host/Main, DisplayTest)
         ├── src/gloom/rebirth/        ← Rebirth, Options, HostGlue, DesktopGlue
@@ -53,9 +53,10 @@ git clone https://github.com/guillaumemonet/gloom-java               # moteur fi
 git clone https://github.com/guillaumemonet/gloom-rebirth             # ce dépôt
 ```
 
-Les textures HD (`hd/`, `hd_src/`) ne sont **pas versionnées** : elles dérivent des textures de
-Gloom, donc non redistribuables. On les régénère en local (cf. « Textures HD » ci-dessous) ; sans
-elles, Rebirth utilise les textures 64×64 d'origine.
+Les textures HD ne sont **pas versionnées** : elles dérivent des textures de Gloom, donc non
+redistribuables. Rebirth les cherche dans `gloom-rebirth/hd/` puis dans
+`../rebirth-docs/gloom-rebirth/hd/` (ou la racine donnée par `-Dgloom.hdroot=`). On les régénère en
+local (cf. « Textures HD » ci-dessous) ; sans elles, Rebirth utilise les textures 64×64 d'origine.
 
 ### Commandes
 
@@ -64,12 +65,12 @@ Depuis `java/` :
 ```bash
 gradle run                        # vue 3D (= gradle rebirth)
 gradle rebirth -Dshot             # capture d'une frame 3D → ../rebirth.png, puis quitte
-gradle dumpTextures -Dmap=map1_1  # extrait les textures du niveau → ../hd_src/map1/
+gradle dumpTextures -Dmap=map1_1  # extrait les textures du niveau → ../../rebirth-docs/gloom-rebirth/hd_src/map1/
 cd android && gradle assembleDebug   # APK « Gloom Rebirth » (applicationId gloom.rebirth)
 ```
 
 JDK 21, Gradle 9.x, Windows x64 (natives LWJGL). Le répertoire d'exécution est `gloom-rebirth/` :
-les assets sont lus dans `../GloomAmiga`, les textures HD dans `./hd/`. Les options sont persistées
+les assets sont lus dans `../GloomAmiga`, les textures HD dans `./hd/` ou `../rebirth-docs/gloom-rebirth/hd/`. Les options sont persistées
 dans `~/.gloom-java/rebirth.properties` (chemin inchangé, pour garder les réglages existants).
 
 **Carte graphique** : au démarrage, le nom du rendu (`GL_RENDERER`) est affiché ; si c'est une puce
@@ -107,8 +108,8 @@ Rebirth cherche des PNG dans `hd/<épisode>/` (ex. `hd/map1/wall_7.png`, `floor.
 retombe sur les textures 64×64 d'origine si le fichier manque. Chaîne de production :
 
 ```bash
-gradle dumpTextures -Dmap=map1_1                                  # → ../hd_src/map1/*.png (textures de base)
-python scripts/upscale-textures.py --src ../hd_src --out ../hd    # upscale IA → ../hd/map1/*.png
+gradle dumpTextures -Dmap=map1_1          # → ../../rebirth-docs/gloom-rebirth/hd_src/map1/*.png
+python scripts/upscale-textures.py --src ../../rebirth-docs/gloom-rebirth/hd_src --out ../../rebirth-docs/gloom-rebirth/hd
 ```
 
 `upscale-textures.py` parcourt `hd_src/` récursivement (l'arborescence par épisode est conservée) et
