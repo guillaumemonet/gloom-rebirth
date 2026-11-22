@@ -21,12 +21,12 @@ de la simulation profite aux deux.
 ```
 Gloom/
 ├── GloomAmiga/          ← assets + sources asm d'origine (lus à l'exécution)
-├── gloom-java/java/     ← portage fidèle 2D (dépôt gloom-java) : moteur partagé (src/)
+├── gloom-java/          ← portage fidèle 2D (dépôt gloom-java) : moteur partagé (src/)
 └── gloom-rebirth/       ← CE projet
     ├── hd/              ← textures HD OPTIONNELLES, par épisode (hd/map1/wall_<slot>.png, floor.png, roof.png)
     ├── hd_src/          ← textures de base extraites (`gradle dumpTextures`), entrée de l'upscale
     └── java/
-        ├── build.gradle ← srcDirs = src + ../../gloom-java/java/src (sans tools/, host/Main, DisplayTest)
+        ├── build.gradle ← srcDirs = src + ../../gloom-java/src (sans tools/, host/Main, DisplayTest)
         ├── src/gloom/rebirth/        ← Rebirth, Options, HostGlue, DesktopGlue
         ├── src/gloom/rebirth/tools/  ← TextureDump
         ├── scripts/upscale-textures.py
@@ -35,7 +35,7 @@ Gloom/
 
 Ce qui est pris dans `gloom-java` : tout `gloom.*`, `gloom.data.*` et la pile hôte réutilisée
 (`host.Audio`, `Font`, `Game`, `LevelScene`, `Splat`, `GpuCheck`…). Sur Android, on prend aussi
-`gloom.android.AndroidAudio` et `AssetSetup` dans `gloom-java/java/android`.
+`gloom.android.AndroidAudio` et `AssetSetup` dans `gloom-java/android`.
 
 ---
 
@@ -43,13 +43,13 @@ Ce qui est pris dans `gloom-java` : tout `gloom.*`, `gloom.data.*` et la pile h�
 
 ### Mise en place
 
-Les trois dépôts doivent être disposés ainsi (le build lit `../../gloom-java/java/src`, le jeu lit
-`../GloomAmiga`) — `gloom-java` est cloné **dans `gloom-java/java`**, comme le prévoit son README :
+Les trois dépôts doivent être **côte à côte** (le build lit `../../gloom-java/src`, le jeu lit
+`../GloomAmiga`) :
 
 ```bash
 mkdir Gloom && cd Gloom
 git clone https://github.com/earok/GloomAmiga                    # assets (non redistribuables, jamais copiés ici)
-git clone https://github.com/guillaumemonet/gloom-java gloom-java/java   # moteur fidèle partagé (dans gloom-java/java)
+git clone https://github.com/guillaumemonet/gloom-java               # moteur fidèle partagé
 git clone https://github.com/guillaumemonet/gloom-rebirth             # ce dépôt
 ```
 
