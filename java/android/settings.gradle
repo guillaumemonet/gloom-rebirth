@@ -1,0 +1,18 @@
+// Projet Gradle INDÉPENDANT : APK « Gloom Rebirth » (3D). Les sources du moteur sont partagées
+// avec ../../../gloom-java via des sourceSets (cf. build.gradle), pas copiées.
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'gloom-rebirth-android'

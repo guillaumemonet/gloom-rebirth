@@ -1,0 +1,102 @@
+plugins {
+    id 'application'
+}
+
+/**
+ * Gloom Rebirth — vue 3D temps réel (jMonkeyEngine) du portage Java de Gloom.
+ *
+ * Ce projet ne contient QUE le code propre à la 3D (src/gloom/rebirth). La simulation (gameplay,
+ * IA, maps, audio, script…) est celle du portage fidèle : ses sources sont compilées telles quelles
+ * depuis le projet voisin ../../gloom-java/java/src — partagées, pas copiées.
+ */
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    lwjglVersion = '3.3.4'
+    lwjglNatives = 'natives-windows'
+    jmeVersion = '3.6.1-stable'
+    // sources du moteur partagé (portage fidèle)
+    engineSrc = file('../../gloom-java/java/src')
+}
+
+dependencies {
+    // LWJGL : utilisé directement par le moteur partagé (host.Audio = OpenAL) et par DesktopGlue (GLFW)
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+    implementation 'org.lwjgl:lwjgl'
+    implementation 'org.lwjgl:lwjgl-glfw'
+    implementation 'org.lwjgl:lwjgl-opengl'
+    implementation 'org.lwjgl:lwjgl-openal'
+    runtimeOnly "org.lwjgl:lwjgl::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+    runtimeOnly "org.lwjgl:lwjgl-openal::$lwjglNatives"
+
+    // jMonkeyEngine 3 (backend LWJGL3)
+    implementation "org.jmonkeyengine:jme3-core:$jmeVersion"
+    implementation "org.jmonkeyengine:jme3-desktop:$jmeVersion"   // AWTLoader, Screenshots
+    implementation "org.jmonkeyengine:jme3-effects:$jmeVersion"   // FogFilter, BloomFilter
+    runtimeOnly    "org.jmonkeyengine:jme3-lwjgl3:$jmeVersion"     // backend LWJGL3 + natives
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src', engineSrc]
+            // Du moteur partagé on ne prend que la simulation et la pile hôte réutilisée
+            // (Audio, Font, Game, LevelScene, Splat…) : pas le lanceur 2D ni ses harnais.
+            exclude 'gloom/tools/**'
+            exclude 'gloom/host/Main.java'
+            exclude 'gloom/host/DisplayTest.java'
+        }
+        resources {
+            srcDirs = []
+        }
+    }
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+base {
+    archivesName = 'gloom-rebirth'
+}
+
+application {
+    mainClass = 'gloom.rebirth.Rebirth'
+    applicationName = 'GloomRebirth'
+}
+
+// Racine d'exécution = gloom-rebirth/ : les assets sont lus dans ../GloomAmiga (défaut de
+// gloom.Assets), les textures HD dans ./hd/<épisode>/.
+def runRoot = projectDir.parentFile
+
+tasks.named('run') {
+    workingDir = runRoot
+    systemProperties System.getProperties().subMap(['shot', 'map', 'tile', 'speed', 'mousesens', 'fov'])
+}
+
+// Alias historique : `gradle rebirth` (= run).
+tasks.register('rebirth', JavaExec) {
+    group = 'application'
+    description = 'Vue 3D Gloom Rebirth (jMonkeyEngine). -Dshot = capture rebirth.png puis quitte'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'gloom.rebirth.Rebirth'
+    workingDir = runRoot
+    systemProperties System.getProperties().subMap(['shot', 'map', 'tile', 'speed', 'mousesens', 'fov'])
+}
+
+// Extrait les textures d'un niveau en PNG (base) → hd_src/<épisode>/, entrée de scripts/upscale-textures.py.
+tasks.register('dumpTextures', JavaExec) {
+    group = 'application'
+    description = 'Extrait les textures du niveau en PNG → hd_src/ (entrée de l\'upscale HD)'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'gloom.rebirth.tools.TextureDump'
+    workingDir = runRoot
+    systemProperties System.getProperties().subMap(['map', 'tile', 'out'])
+}

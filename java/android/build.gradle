@@ -1,0 +1,79 @@
+plugins {
+    id 'com.android.application' version '8.13.0'
+}
+
+/**
+ * Gloom Rebirth sur Android — la vue 3D jMonkeyEngine, en APK séparé du portage 2D.
+ *
+ * Rien n'est dupliqué : on compile
+ *   - src/main/java                              → RebirthActivity, Touch3d, SetupActivity, AndroidGlue
+ *   - ../src                                     → la vue 3D (gloom.rebirth.*)
+ *   - ../../../gloom-java/java/src               → la simulation du portage fidèle (partagée)
+ *   - ../../../gloom-java/java/android/src/...   → AndroidAudio + AssetSetup (partagés avec l'APK 2D)
+ */
+def engine = '../../../gloom-java/java'
+
+android {
+    namespace 'gloom.android3d'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'gloom.rebirth'     // ≠ de l'APK 2D (gloom.android) : les deux s'installent côte à côte
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '0.6'
+        ndk {
+            // jme3-android-native fournit 4 ABI ; on garde celles des téléphones réels
+            abiFilters 'arm64-v8a', 'armeabi-v7a'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java', '../src', "$engine/src", "$engine/android/src/main/java"]
+            java.excludes = [
+                    'gloom/tools/**',                   // harnais de dev du 2D (AWT/ImageIO)
+                    'gloom/rebirth/tools/**',           // TextureDump (AWT/ImageIO)
+                    'gloom/host/Main.java',             // lanceur 2D desktop (GLFW)
+                    'gloom/host/Display.java',          // fenêtre GLFW
+                    'gloom/host/Audio.java',            // OpenAL → AndroidAudio
+                    'gloom/host/DisplayTest.java',
+                    'gloom/rebirth/DesktopGlue.java',   // GLFW + AWT : seul fichier 3D non portable
+                    'gloom/android/GloomActivity.java', // l'APK 2D : on ne garde que AndroidAudio/AssetSetup
+                    'gloom/android/GameView.java',
+                    'gloom/android/TouchPad.java',
+            ]
+            manifest.srcFile 'src/main/AndroidManifest.xml'
+            res.srcDirs = ['src/main/res']
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false     // le moteur ne fait de réflexion que sur HostGlue, R8 n'apporte rien
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    packaging {
+        resources.excludes += ['META-INF/**']
+        jniLibs.useLegacyPackaging true       // les .so de jME viennent d'un JAR simple, pas d'un AAR
+    }
+}
+
+dependencies {
+    def jme = '3.6.1-stable'
+    implementation "org.jmonkeyengine:jme3-core:$jme"
+    implementation "org.jmonkeyengine:jme3-android:$jme"          // AndroidHarness + renderer GLES
+    implementation "org.jmonkeyengine:jme3-effects:$jme"          // FogFilter / BloomFilter
+    runtimeOnly "org.jmonkeyengine:jme3-android-native:$jme"      // .so : openalsoft, decode, bufferallocator
+}

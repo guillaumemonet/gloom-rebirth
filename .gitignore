@@ -1,0 +1,17 @@
+# build
+java/build/
+java/.gradle/
+java/android/build/
+java/android/.gradle/
+java/android/local.properties
+*.class
+.idea/
+nbproject/private/
+
+# Textures HD / extraites : dérivées des assets de Gloom, NON redistribuables (cf. README).
+# Elles se régénèrent en local : gradle dumpTextures + scripts/upscale-textures.py.
+hd/
+hd_src/
+
+# sorties de diagnostic
+/rebirth.png
