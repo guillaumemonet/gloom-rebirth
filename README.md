@@ -156,9 +156,79 @@ particules** (`PARTICLES`, grossit sang/étincelles/gibs — voir ci-dessous) et
 
 ---
 
-## 4. Licence & crédits
+## 4. Mentions légales et données du jeu
 
-*Gloom* est © Black Magic Software. Les sources `.s`/`.bb2` d'origine sont dans le domaine public ;
-les données du jeu ne le sont pas et ne sont jamais redistribuées ici (lues dans les disquettes de
-Gloom Deluxe, proposées au téléchargement depuis [Amiga Museum](https://amigamuseum.emu-france.info)).
-Portage et vue 3D : Guillaume Monet.
+### Implémentation indépendante du moteur
+
+Ce projet est une réimplémentation indépendante du moteur de *Gloom*, conçue pour reproduire le comportement du jeu d'origine sur les plateformes modernes.
+
+Le moteur a été développé à partir du code source d'origine (`.s`/`.bb2`), placé dans le domaine public ([earok/GloomAmiga](https://github.com/earok/GloomAmiga)), par analyse technique et tests de compatibilité. Ce code source n'est pas inclus dans ce dépôt ; la vue 3D compile la simulation du portage gloom-java.
+
+### Fichiers du jeu d'origine
+
+Ce projet nécessite des fichiers du jeu d'origine, comme les images de disquettes Amiga (ADF), pour fonctionner.
+
+**Les fichiers du jeu d'origine ne sont pas inclus dans ce projet.**
+
+Chaque utilisateur doit se procurer et fournir ses propres fichiers de jeu auprès d'une source légalement autorisée. Avant de télécharger ou d'utiliser ce moteur, l'utilisateur doit confirmer qu'il possède une copie du jeu d'origine obtenue légalement.
+
+Le jeu lit les deux disquettes de **Gloom Deluxe** et propose de les télécharger depuis [Amiga Museum](https://amigamuseum.emu-france.info) au premier lancement, sans rien faire sans l'accord de l'utilisateur. Les textures HD, dérivées de celles du jeu, ne sont pas versionnées.
+
+Eloane Studio n'héberge, ne distribue ni ne fournit de copies non autorisées de données de jeu protégées par le droit d'auteur.
+
+### Droits d'auteur et marques
+
+Les noms, marques, graphismes, musiques et autres éléments propriétaires de *Gloom* restent la propriété de leurs titulaires respectifs (Black Magic Software).
+
+Ce projet est une implémentation indépendante et non officielle ; il n'est ni affilié, ni approuvé, ni soutenu par les développeurs ou les éditeurs du jeu d'origine.
+
+### Préservation
+
+Ce projet a pour but de préserver le comportement technique et l'expérience de jeu des jeux vidéo classiques, tout en les rendant accessibles sur les systèmes modernes.
+
+Le moteur est fourni à des fins de compatibilité, de préservation et d'éducation.
+
+### Crédits
+
+Moteur d'origine : **Black Magic Software** (1995). Portage et vue 3D : **Guillaume Monet**.
+
+<details>
+<summary>English version</summary>
+
+### Legal Notice & Game Assets
+
+#### Independent Engine Implementation
+
+This project is an independent reimplementation of the *Gloom* engine, designed to reproduce the original game's behavior on modern platforms.
+
+The engine has been developed from the original source code (`.s`/`.bb2`), released into the public domain ([earok/GloomAmiga](https://github.com/earok/GloomAmiga)), through technical analysis and compatibility testing. That source code is not included in this repository; the 3D view compiles the gloom-java port's simulation.
+
+#### Original Game Files
+
+This project requires original game files, such as Amiga ADF disk images, to run.
+
+**Original game files are not included in this project.**
+
+Users must obtain and provide their own game files from a legally authorized source. Before downloading or using this engine, users are required to confirm that they possess a legally obtained copy of the original game.
+
+The game reads the two **Gloom Deluxe** floppy images and offers to download them from [Amiga Museum](https://amigamuseum.emu-france.info) on first run, doing nothing without the user's consent. HD textures, derived from the game's, are not versioned.
+
+Eloane Studio does not host, distribute, or provide unauthorized copies of copyrighted game assets.
+
+#### Copyright & Trademarks
+
+All original game names, trademarks, graphics, music, and other proprietary assets of *Gloom* remain the property of their respective copyright holders (Black Magic Software).
+
+This project is an independent, unofficial implementation and is not affiliated with, endorsed by, or sponsored by the original game's developers or publishers.
+
+#### Preservation
+
+The purpose of this project is to preserve the technical behavior and gameplay experience of classic video games while making them accessible on modern systems.
+
+The engine is provided for compatibility, preservation, and educational purposes.
+
+#### Credits
+
+Original engine: **Black Magic Software** (1995). Port and 3D view: **Guillaume Monet**.
+
+</details>
