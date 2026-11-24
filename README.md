@@ -1,209 +1,172 @@
-# Gloom Rebirth — vue 3D
+# Gloom Rebirth — 3D view
 
-Vue 3D temps réel (jMonkeyEngine) du portage Java de *Gloom* (Black Magic Software, Amiga, 1995).
-Elle rejoue **le même jeu porté** que `../gloom-java/` : la simulation reste celle de l'assembleur
-(`Objects`, `Player`, `Events`, `Map`, `host.Game`, `Sfx`/`MedPlayer` — mêmes `Mem.RAM`, mêmes
-listes, même IA) ; seuls l'**affichage et l'entrée** sont remplacés. Le rasteriseur `Render` n'est
-pas appelé : Rebirth lit directement l'état du monde en RAM 68k et le traduit en scène jMonkeyEngine.
+*[Version française](README_fr.md)*
 
-> Porté par **Guillaume Monet**, avec l'assistance de Claude.
+Real-time 3D view (jMonkeyEngine) of the Java port of *Gloom* (Black Magic Software, Amiga, 1995).
+It replays **the same ported game** as `../gloom-java/`: the simulation is still the assembly one
+(`Objects`, `Player`, `Events`, `Map`, `host.Game`, `Sfx`/`MedPlayer` — same `Mem.RAM`, same
+lists, same AI); only the **display and input** are replaced. The `Render` rasteriser is
+not called: Rebirth reads the world state directly from 68k RAM and translates it into a jMonkeyEngine scene.
+
+> Ported by **Guillaume Monet**, with assistance from Claude.
 
 ![Gloom Rebirth](docs/img/rebirth-3d.png)
 
-*Vue 3D avec le panneau de statut et l'arme de Gloom Deluxe en surimpression, pixels nets.*
+*3D view with the Gloom Deluxe status panel and weapon overlaid, crisp pixels.*
 
-## Télécharger
+## Download
 
-Les binaires sont dans les [releases](https://github.com/guillaumemonet/gloom-rebirth/releases) :
-`GloomRebirth-<version>-windows-x64.zip` (JRE embarqué : décompresser, lancer `GloomRebirth.exe`) et
-l'APK Android. **Aucune donnée du jeu n'est incluse** : au premier lancement, si les disquettes de
-Gloom Deluxe sont introuvables, le jeu propose de les télécharger depuis
-[Amiga Museum](https://amigamuseum.emu-france.info) — rien sans un oui.
+The binaries are in the [releases](https://github.com/guillaumemonet/gloom-rebirth/releases):
+`GloomRebirth-<version>-windows-x64.zip` (bundled JRE: unzip, run `GloomRebirth.exe`) and
+the Android APK. **No game data is included**: on first launch, if the Gloom Deluxe disks
+cannot be found, the game offers to download them from
+[Amiga Museum](https://amigamuseum.emu-france.info) — nothing happens without a yes.
 
 ---
 
-## 1. Séparation d'avec gloom-java
+## 1. Separation from gloom-java
 
-Ce projet ne contient **que le code propre à la 3D**. Le moteur fidèle n'est pas copié : ses sources
-sont compilées **telles quelles** depuis le projet voisin (sourceSet Gradle), donc toute correction
-de la simulation profite aux deux.
+This project contains **only the 3D-specific code**. The faithful engine is not copied: its sources
+are compiled **as is** from the sibling project (Gradle sourceSet), so any fix to the
+simulation benefits both.
 
 ```
 Gloom/
-├── adf/                 ← les deux disquettes Gloom Deluxe (.adf), lues directement
-├── gloom-java/          ← portage fidèle 2D (dépôt gloom-java) : moteur partagé (src/)
-├── rebirth-docs/        ← HORS git : docs de travail, captures, textures HD
-│   └── gloom-rebirth/hd/<épisode>/wall_<slot>.png, floor.png, roof.png  (+ hd_src/ = textures de base)
-└── gloom-rebirth/       ← CE projet
-    ├── build.gradle     ← srcDirs = src + ../gloom-java/src (sans tools/, host/Main, DisplayTest)
+├── adf/                 ← the two Gloom Deluxe disks (.adf), read directly
+├── gloom-java/          ← faithful 2D port (gloom-java repo): shared engine (src/)
+├── rebirth-docs/        ← OUTSIDE git: working docs, screenshots, HD textures
+│   └── gloom-rebirth/hd/<episode>/wall_<slot>.png, floor.png, roof.png  (+ hd_src/ = base textures)
+└── gloom-rebirth/       ← THIS project
+    ├── build.gradle     ← srcDirs = src + ../gloom-java/src (without tools/, host/Main, DisplayTest)
     ├── src/gloom/rebirth/        ← Rebirth, Options, HostGlue, DesktopGlue
     ├── src/gloom/rebirth/tools/  ← TextureDump
     ├── scripts/upscale-textures.py
-    ├── docs/img/        ← capture du README
-    └── android/         ← APK 3D séparé (RebirthActivity, Touch3d, SetupActivity, AndroidGlue)
+    ├── docs/img/        ← README screenshot
+    └── android/         ← separate 3D APK (RebirthActivity, Touch3d, SetupActivity, AndroidGlue)
 ```
 
-Ce qui est pris dans `gloom-java` : tout `gloom.*`, `gloom.data.*` et la pile hôte réutilisée
-(`host.Audio`, `Font`, `Game`, `LevelScene`, `Splat`, `GpuCheck`…). Sur Android, on prend aussi
-`gloom.android.AndroidAudio` et `AssetSetup` dans `gloom-java/android`.
+What is taken from `gloom-java`: all of `gloom.*`, `gloom.data.*` and the reused host stack
+(`host.Audio`, `Font`, `Game`, `LevelScene`, `Splat`, `GpuCheck`…). On Android, it also takes
+`gloom.android.AndroidAudio` and `AssetSetup` from `gloom-java/android`.
 
 ---
 
-## 2. Compilation & exécution
+## 2. Building & running
 
-### Mise en place
+### Setup
 
-Les deux dépôts doivent être **côte à côte** (le build lit `../gloom-java/src`) :
+The two repositories must be **side by side** (the build reads `../gloom-java/src`):
 
 ```bash
 mkdir Gloom && cd Gloom
-git clone https://github.com/guillaumemonet/gloom-java      # moteur fidèle partagé
-git clone https://github.com/guillaumemonet/gloom-rebirth   # ce dépôt
+git clone https://github.com/guillaumemonet/gloom-java      # shared faithful engine
+git clone https://github.com/guillaumemonet/gloom-rebirth   # this repository
 ```
 
-Les données du jeu sont lues **dans les deux disquettes de Gloom Deluxe** (`.adf`), comme pour
-gloom-java : `-Dgloom.adf=<dossier>`, `../adf` (`Gloom/adf`), puis `~/.gloom-java/adf`. Si elles
-manquent, le jeu **propose** de les télécharger depuis
-[Amiga Museum](https://amigamuseum.emu-france.info) — rien sans un oui. L'APK fait de même au
-premier lancement.
+The game data is read **from the two Gloom Deluxe disks** (`.adf`), as in
+gloom-java: `-Dgloom.adf=<folder>`, `../adf` (`Gloom/adf`), then `~/.gloom-java/adf`. If they
+are missing, the game **offers** to download them from
+[Amiga Museum](https://amigamuseum.emu-france.info) — nothing happens without a yes. The APK does the same on
+first launch.
 
-Les textures HD ne sont **pas versionnées** : elles dérivent des textures de Gloom, donc non
-redistribuables. Rebirth les cherche dans `gloom-rebirth/hd/` puis dans
-`../rebirth-docs/gloom-rebirth/hd/` (ou la racine donnée par `-Dgloom.hdroot=`). On les régénère en
-local (cf. « Textures HD » ci-dessous) ; sans elles, Rebirth utilise les textures 64×64 d'origine.
+The HD textures are **not versioned**: they are derived from Gloom's textures, so they cannot be
+redistributed. Rebirth looks for them in `gloom-rebirth/hd/` then in
+`../rebirth-docs/gloom-rebirth/hd/` (or the root given by `-Dgloom.hdroot=`). They are regenerated
+locally (see "HD textures" below); without them, Rebirth uses the original 64×64 textures.
 
-### Commandes
+### Commands
 
-Depuis `gloom-rebirth/` :
+From `gloom-rebirth/`:
 
 ```bash
 gradle run                        # vue 3D (= gradle rebirth)
 gradle rebirth -Dshot             # capture d'une frame 3D → ../rebirth.png, puis quitte
-gradle releaseZip                 # app native (JRE embarqué) zippée → build/release/
+gradle releaseZip                 # native app (bundled JRE), zipped → build/release/
 gradle dumpTextures -Dmap=map1_1  # extrait les textures du niveau → ../rebirth-docs/gloom-rebirth/hd_src/map1/
-cd android && gradle assembleDebug   # APK « Gloom Rebirth » (applicationId gloom.rebirth)
+cd android && gradle assembleDebug   # "Gloom Rebirth" APK (applicationId gloom.rebirth)
 ```
 
-JDK 21, Gradle 9.x, Windows x64 (natives LWJGL). Le répertoire d'exécution est `gloom-rebirth/` :
-les données viennent des disquettes (voir ci-dessus), les textures HD dans `./hd/` ou `../rebirth-docs/gloom-rebirth/hd/`. Les options sont persistées
-dans `~/.gloom-java/rebirth.properties` (chemin inchangé, pour garder les réglages existants).
+JDK 21, Gradle 9.x, Windows x64 (LWJGL natives). The working directory is `gloom-rebirth/`:
+the data comes from the disks (see above), the HD textures from `./hd/` or `../rebirth-docs/gloom-rebirth/hd/`. Options are persisted
+in `~/.gloom-java/rebirth.properties` (path unchanged, to keep existing settings).
 
-**Carte graphique** : au démarrage, le nom du rendu (`GL_RENDERER`) est affiché dans la console.
+**Graphics card**: at startup, the renderer name (`GL_RENDERER`) is printed to the console.
 
-**Contrôles** : `W`/`S` avancer/reculer, `A`/`D` pas de côté, `←`/`→` tourner, **souris** mouselook
-(curseur verrouillé), `Ctrl` tirer, `Échap` = menu contextuel (options → menu → quitter).
-Toutes les touches sont **remappables** dans le menu `OPTIONS`.
+**Controls**: `W`/`S` forward/back, `A`/`D` strafe, `←`/`→` turn, **mouse** mouselook
+(cursor locked), `Ctrl` fire, `Esc` = context menu (options → menu → quit).
+All keys are **remappable** in the `OPTIONS` menu.
 
-### Ce que fait le rendu 3D
+### What the 3D renderer does
 
-| Élément | Traduction 3D |
+| Element | 3D translation |
 |---|---|
-| Murs (zones de la map) | quads extrudés sur `WALL_H`, groupés par texture ; **reconstruits** quand une porte/anim bouge (`wallsHash`) — les portes ont leur propre matériau `PolyOffset` (anti z-fighting) |
-| Sol / plafond | vrais plans texturés (plus de perspective logicielle) |
-| Monstres, items, gibs, étincelles | **billboards** face-caméra avec les sprites d'origine, sélection de frame 8 directions conservée (`drawshape_8`), matériau éclairé |
-| `ob_invisible` | les 3 rendus de l'original : normal, **translucide** 50 % (`drawobjtrans` — le ghoul) et **« invisible »** qui n'assombrit que le fond sans montrer sa couleur (`drawobjinvs` — powerup) |
-| Vision thermique (`ob_thermo`) | second quad au même endroit, test de profondeur **inversé** (`depthFunc Greater`) → silhouette **bleue** visible uniquement là où le sprite est occulté, l'équivalent pixel du `thermostrip` colonne par colonne |
-| Gore au sol (liste `gore`) | quads horizontaux posés sur le sol (décals) |
-| Sang (liste `blood`) | **un seul mesh** de quads face-caméra, colorés par sommet depuis `bl_color` |
-| Balles | sprite + **point light** dynamique (couleur par type d'arme : joueur orangé, ghoul vert, phantom bleu…) |
-| Ambiance | torche portée par le joueur, flash de bouche au tir, textures émissives → point lights, bloom + brouillard + ombres directionnelles |
-| Dégâts / mort | voile rouge plein écran (flash décroissant) |
-| Écrans d'histoire, menus, game over | le framebuffer 2D de `host.Game` uploadé en overlay plein écran (même UI que le portage 2D) |
+| Walls (map zones) | quads extruded to `WALL_H`, grouped by texture; **rebuilt** when a door/animation moves (`wallsHash`) — doors have their own `PolyOffset` material (anti z-fighting) |
+| Floor / ceiling | real textured planes (no more software perspective) |
+| Monsters, items, gibs, sparks | camera-facing **billboards** with the original sprites, 8-direction frame selection kept (`drawshape_8`), lit material |
+| `ob_invisible` | the original's 3 renderings: normal, 50 % **translucent** (`drawobjtrans` — the ghoul) and **"invisible"**, which only darkens the background without showing its colour (`drawobjinvs` — powerup) |
+| Thermal vision (`ob_thermo`) | second quad at the same spot, **inverted** depth test (`depthFunc Greater`) → **blue** silhouette visible only where the sprite is occluded, the pixel equivalent of the column-by-column `thermostrip` |
+| Floor gore (`gore` list) | horizontal quads laid on the floor (decals) |
+| Blood (`blood` list) | **a single mesh** of camera-facing quads, vertex-coloured from `bl_color` |
+| Bullets | sprite + dynamic **point light** (colour per weapon type: player orange, ghoul green, phantom blue…) |
+| Ambience | torch carried by the player, muzzle flash when firing, emissive textures → point lights, bloom + fog + directional shadows |
+| Damage / death | full-screen red veil (fading flash) |
+| Story screens, menus, game over | the 2D framebuffer of `host.Game` uploaded as a full-screen overlay (same UI as the 2D port) |
 
-La simulation tourne à **pas de temps fixe** de 1/50 s — le balayage PAL de l'Amiga, logique un pas
-sur deux (accumulateur borné à 6 pas) : le gameplay reste à la vitesse de l'original quel que soit le
-framerate d'affichage (60, 144 Hz…). La **vitesse du joueur** seule peut être poussée (`PLAYER SPEED`,
-×1.0 par défaut) — les monstres et les balles gardent leur vitesse d'origine.
+The simulation runs at a **fixed time step** of 1/50 s — the Amiga's PAL refresh, with logic every
+other step (accumulator capped at 6 steps): gameplay stays at the original's speed whatever the
+display framerate (60, 144 Hz…). Only the **player speed** can be raised (`PLAYER SPEED`,
+×1.0 by default) — monsters and bullets keep their original speed.
 
-### Textures HD (optionnel)
+### HD textures (optional)
 
-Rebirth cherche des PNG dans `hd/<épisode>/` (ex. `hd/map1/wall_7.png`, `floor.png`, `roof.png`) et
-retombe sur les textures 64×64 d'origine si le fichier manque. Chaîne de production :
+Rebirth looks for PNGs in `hd/<episode>/` (e.g. `hd/map1/wall_7.png`, `floor.png`, `roof.png`) and
+falls back to the original 64×64 textures if the file is missing. Production pipeline:
 
 ```bash
 gradle dumpTextures -Dmap=map1_1          # → ../rebirth-docs/gloom-rebirth/hd_src/map1/*.png
 python scripts/upscale-textures.py --src ../rebirth-docs/gloom-rebirth/hd_src --out ../rebirth-docs/gloom-rebirth/hd
 ```
 
-`upscale-textures.py` parcourt `hd_src/` récursivement (l'arborescence par épisode est conservée) et
-prend Real-ESRGAN ncnn s'il est sur le `PATH` (`realesrgan-ncnn-vulkan`, modèle `x4plus-anime`, le
-meilleur sur du pixel-art), sinon repli Pillow/LANCZOS sans IA. Ses défauts `--src hd_src --out hd`
-supposent qu'on le lance depuis la racine des assets, d'où les chemins explicites ci-dessus.
+`upscale-textures.py` walks `hd_src/` recursively (the per-episode tree is kept) and
+uses Real-ESRGAN ncnn if it is on the `PATH` (`realesrgan-ncnn-vulkan`, `x4plus-anime` model, the
+best on pixel art), otherwise falls back to Pillow/LANCZOS without AI. Its defaults `--src hd_src --out hd`
+assume it is run from the assets root, hence the explicit paths above.
 
-### Menu OPTIONS
+### OPTIONS menu
 
-Persisté dans `~/.gloom-java/rebirth.properties` : résolution, fenêtre/plein écran, vsync (avec
-`APPLY DISPLAY` qui recrée le contexte), FOV, sensibilité souris, vitesse du joueur, **taille des
-particules** (`PARTICLES`, grossit sang/étincelles/gibs — voir ci-dessous) et remappage des 7 touches.
+Persisted in `~/.gloom-java/rebirth.properties`: resolution, windowed/fullscreen, vsync (with
+`APPLY DISPLAY`, which recreates the context), FOV, mouse sensitivity, player speed, **particle
+size** (`PARTICLES`, enlarges blood/sparks/gibs — see below) and remapping of the 7 keys.
 
-> **Note de fidélité** — les gouttes de sang font **un pixel** dans le moteur d'origine et les
-> étincelles/gibs quelques pixels : à l'échelle 3D elles disparaissent purement et simplement.
-> D'où le réglage `PARTICLES` (×0.5 → ×4, défaut ×1.5) qui les grossit sans toucher aux monstres
-> ni aux items.
+> **Fidelity note** — blood drops are **one pixel** in the original engine and
+> sparks/gibs a few pixels: at 3D scale they simply disappear.
+> Hence the `PARTICLES` setting (×0.5 → ×4, default ×1.5), which enlarges them without touching monsters
+> or items.
 
 ---
 
-## 3. Avancement
+## 3. Progress
 
-| # | Sous-système | Statut |
+| # | Subsystem | Status |
 |---|---|---|
-| R1 | Rebirth : géométrie du niveau (murs, sol/plafond, portes animées) | ✅ `gloom.rebirth.Rebirth` — `gradle rebirth` |
-| R2 | Rebirth : billboards (monstres/items/gibs/étincelles) + décals de gore + sang | ✅ `gloom.rebirth.Rebirth` — `gradle rebirth -Dshot` → rebirth.png |
-| R3 | Rebirth : éclairage dynamique + post-effets + mouselook + HUD | ✅ `gloom.rebirth.Rebirth` |
-| R4 | Rebirth : textures HD par épisode (`hd/<épisode>/`) + extraction/upscale | ✅ `gradle dumpTextures` + `scripts/upscale-textures.py` |
-| R6 | Rebirth : panneau HUD + arme à l'écran de Gloom Deluxe (surimpression, pixels nets) | ✅ `gloom.host.Panel`/`Gun` (gloom-java) — `Rebirth.updateDeluxeOverlay` |
-| R5 | Rebirth : menu OPTIONS persisté (affichage, contrôles remappables, confort, particules) | ✅ `gloom.rebirth.Options` — `~/.gloom-java/rebirth.properties` |
+| R1 | Rebirth: level geometry (walls, floor/ceiling, animated doors) | ✅ `gloom.rebirth.Rebirth` — `gradle rebirth` |
+| R2 | Rebirth: billboards (monsters/items/gibs/sparks) + gore decals + blood | ✅ `gloom.rebirth.Rebirth` — `gradle rebirth -Dshot` → rebirth.png |
+| R3 | Rebirth: dynamic lighting + post-effects + mouselook + HUD | ✅ `gloom.rebirth.Rebirth` |
+| R4 | Rebirth: per-episode HD textures (`hd/<episode>/`) + extraction/upscale | ✅ `gradle dumpTextures` + `scripts/upscale-textures.py` |
+| R6 | Rebirth: Gloom Deluxe HUD panel + on-screen weapon (overlay, crisp pixels) | ✅ `gloom.host.Panel`/`Gun` (gloom-java) — `Rebirth.updateDeluxeOverlay` |
+| R5 | Rebirth: persisted OPTIONS menu (display, remappable controls, comfort, particles) | ✅ `gloom.rebirth.Options` — `~/.gloom-java/rebirth.properties` |
 
 ---
 
-## 4. Mentions légales et données du jeu
+## 4. Legal Notice & Game Assets
 
-### Implémentation indépendante du moteur
-
-Ce projet est une réimplémentation indépendante du moteur de *Gloom*, conçue pour reproduire le comportement du jeu d'origine sur les plateformes modernes.
-
-Le moteur a été développé à partir du code source d'origine (`.s`/`.bb2`), placé dans le domaine public ([earok/GloomAmiga](https://github.com/earok/GloomAmiga)), par analyse technique et tests de compatibilité. Ce code source n'est pas inclus dans ce dépôt ; la vue 3D compile la simulation du portage gloom-java.
-
-### Fichiers du jeu d'origine
-
-Ce projet nécessite des fichiers du jeu d'origine, comme les images de disquettes Amiga (ADF), pour fonctionner.
-
-**Les fichiers du jeu d'origine ne sont pas inclus dans ce projet.**
-
-Chaque utilisateur doit se procurer et fournir ses propres fichiers de jeu auprès d'une source légalement autorisée. Avant de télécharger ou d'utiliser ce moteur, l'utilisateur doit confirmer qu'il possède une copie du jeu d'origine obtenue légalement.
-
-Le jeu lit les deux disquettes de **Gloom Deluxe** et propose de les télécharger depuis [Amiga Museum](https://amigamuseum.emu-france.info) au premier lancement, sans rien faire sans l'accord de l'utilisateur. Les textures HD, dérivées de celles du jeu, ne sont pas versionnées.
-
-Eloane Studio n'héberge, ne distribue ni ne fournit de copies non autorisées de données de jeu protégées par le droit d'auteur.
-
-### Droits d'auteur et marques
-
-Les noms, marques, graphismes, musiques et autres éléments propriétaires de *Gloom* restent la propriété de leurs titulaires respectifs (Black Magic Software).
-
-Ce projet est une implémentation indépendante et non officielle ; il n'est ni affilié, ni approuvé, ni soutenu par les développeurs ou les éditeurs du jeu d'origine.
-
-### Préservation
-
-Ce projet a pour but de préserver le comportement technique et l'expérience de jeu des jeux vidéo classiques, tout en les rendant accessibles sur les systèmes modernes.
-
-Le moteur est fourni à des fins de compatibilité, de préservation et d'éducation.
-
-### Crédits
-
-Moteur d'origine : **Black Magic Software** (1995). Portage et vue 3D : **Guillaume Monet**.
-
-<details>
-<summary>English version</summary>
-
-### Legal Notice & Game Assets
-
-#### Independent Engine Implementation
+### Independent Engine Implementation
 
 This project is an independent reimplementation of the *Gloom* engine, designed to reproduce the original game's behavior on modern platforms.
 
 The engine has been developed from the original source code (`.s`/`.bb2`), released into the public domain ([earok/GloomAmiga](https://github.com/earok/GloomAmiga)), through technical analysis and compatibility testing. That source code is not included in this repository; the 3D view compiles the gloom-java port's simulation.
 
-#### Original Game Files
+### Original Game Files
 
 This project requires original game files, such as Amiga ADF disk images, to run.
 
@@ -215,20 +178,18 @@ The game reads the two **Gloom Deluxe** floppy images and offers to download the
 
 Eloane Studio does not host, distribute, or provide unauthorized copies of copyrighted game assets.
 
-#### Copyright & Trademarks
+### Copyright & Trademarks
 
 All original game names, trademarks, graphics, music, and other proprietary assets of *Gloom* remain the property of their respective copyright holders (Black Magic Software).
 
 This project is an independent, unofficial implementation and is not affiliated with, endorsed by, or sponsored by the original game's developers or publishers.
 
-#### Preservation
+### Preservation
 
 The purpose of this project is to preserve the technical behavior and gameplay experience of classic video games while making them accessible on modern systems.
 
 The engine is provided for compatibility, preservation, and educational purposes.
 
-#### Credits
+### Credits
 
 Original engine: **Black Magic Software** (1995). Port and 3D view: **Guillaume Monet**.
-
-</details>
